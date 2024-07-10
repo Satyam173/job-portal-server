@@ -1,22 +1,18 @@
-import mongoose from "mongoose";
+import mongoose ,{Schema} from "mongoose";
 import validator from "validator";
 import bcrypt from 'bcryptjs';
 import JWT from 'jsonwebtoken';
 
-const userSchema = new mongoose.Schema({
-    firstName:{
+const companySchema = new mongoose.Schema({
+    name:{
         type:String,
-        required:[true, "first name is required"],
-    },
-    lastName:{
-        type:String,
-        required:[true, "last name is required"],
+        required:[true,"Company name is required"],
     },
     email:{
-        type:String,
-        required:[true, "Email is required"],
+        tye:String,
+        required:[true,"email is required"],
         unique:true,
-        validate:validator.isEmail
+        validate:validator.isEmail,
     },
     passowrd:{
         type:String,
@@ -24,32 +20,26 @@ const userSchema = new mongoose.Schema({
         minlength:[6,"Passowrd must be at least 6 characters long"],
         select:true
     },
-    accountType:{type:String, default:"seeker"},
     contact:{type:String},
     location:{type:String},
     profileUrl:{type:String},
-    jobTitle:{type:String},
-    about:{type:String},
-},
+    jobPosts:[{type:Schema.Types.ObjectId,ref:"Jobs"}]
+});
 
-{timestamps:true}
-
-);
-
-userSchema.pre("save",async function(){
+companySchema.pre("save",async function(){
     if(!this.isModified) return;
     const salt = await bcrypt.getSalt(10);
     this.passowrd = await bcrypt.hash(this.passowrd,salt);
 })
 
 //compare pwd
-userSchema.method.comparePassword = async function(userPassword){
+companySchema.method.comparePassword = async function(userPassword){
     const isMatch = await bcrypt.compare(userPassword,this.passowrd);
     return isMatch;
 }
 
 //jwt token
-userSchema.method.createToken = async function(){
+companySchema.method.createToken = async function(){
     return JWT.sign(
         {userId:this._id},
         process.env.JWT_SECRET_KEY,
@@ -57,5 +47,5 @@ userSchema.method.createToken = async function(){
 });
 }
 
-const Users = mongoose.model("Users",userSchema);
-export default Users;
+const Companies = mongoose.model("Companies",companySchema);
+export default Companies
