@@ -28,7 +28,7 @@ const companySchema = new mongoose.Schema({
 
 companySchema.pre("save",async function(){
     if(!this.isModified) return;
-    const salt = await bcrypt.getSalt(10);
+    const salt = await bcrypt.genSalt(10);
     this.passowrd = await bcrypt.hash(this.passowrd,salt);
 })
 
@@ -39,7 +39,7 @@ companySchema.method.comparePassword = async function(userPassword){
 }
 
 //jwt token
-companySchema.method.createToken = async function(){
+companySchema.method.createJWT = async function(){
     return JWT.sign(
         {userId:this._id},
         process.env.JWT_SECRET_KEY,
